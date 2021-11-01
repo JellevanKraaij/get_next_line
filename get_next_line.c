@@ -6,61 +6,60 @@
 /*   By: jvan-kra <jvan-kra@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/11/01 12:24:47 by jvan-kra          #+#    #+#             */
-/*   Updated: 2021/11/01 16:43:00 by jvan-kra         ###   ########.fr       */
+/*   Updated: 2021/11/01 22:48:11 by jvan-kra         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "get_next_line.h"
 #include <stdio.h>
 
-static void	empty_buffer_data(t_buffer_data *data)
-{
-	free(data->buffer);
-	data->buffer = NULL;
-	data->cursor = 0;
-	data->len = 0;
-}
-
 char	*get_next_line(int fd)
 {
-	static t_buffer_data	data;
-	size_t					i;
-	char					*ret;
+	static char	*leftover;
+	char		buffer[BUFFER_SIZE + 1];
+	char		*tmp;
+	size_t		len;
+	char		*ret;
 
-	i = 0;
-	ret = 0;
-	if (data.buffer == NULL)
-		data.buffer = malloc(BUFFER_SIZE + 1);
-	if (data.buffer == NULL)
+	ret = NULL;
+	if (leftover == NULL)
+	{
+		len = read(fd, buffer, BUFFER_SIZE);
+		buffer[len] = '\0';
+	}
+	else
+	{
+		len = ft_strlen(leftover);
+		ft_memcpy(buffer, leftover, len + 1);
+		free(leftover);
+		leftover = NULL;
+	}
+	if (len <= 0)
+	{
+		free(leftover);
 		return (NULL);
-	if (data.len == 0)
-		data.len = read(fd, data.buffer, BUFFER_SIZE);
-	while (data.len > 0)
+	}
+	while (len > 0 && ft_strchr(buffer, '\n') == NULL)
 	{
-		while (i + data.cursor < data.len)
+		ret = ft_append_buff(ret, buffer, len);
+		len = read(fd, buffer, BUFFER_SIZE);
+		if (len < 0)
 		{
-			i++;
-			if (data.buffer[i + data.cursor] == '\n')
-			{
-				ret = ft_strndup(&data.buffer[data.cursor], i);
-				data.cursor += i + 1;
-				return (ret);
-			}
-			else if (i + data.cursor == data.len - 1)
-			{
-				ret = ft_strndup(&data.buffer[data.cursor], i);
-				data.cursor += i + 1;
-				return (ret);
-			}
+			free(ret);
+			free(leftover);
+			leftover = NULL;
+			return (NULL);
 		}
-		data.cursor = 0;
-		data.len = read(fd, data.buffer, BUFFER_SIZE);
+		buffer[len] = '\0';
 	}
-	if (data.len == 0)
+	if (len == 0)
 	{
-		printf("datalen == 0");
-		ret = ft_strndup(&data.buffer[data.cursor], i);
+		free(leftover);
+		leftover = NULL;
+		return (ret);
 	}
-
+	tmp = ft_strchr(buffer, '\n');
+	ret = ft_append_buff(ret, buffer, tmp - buffer);
+	leftover = ft_append_buff(leftover, tmp + 1, ft_strlen(tmp + 1));
 	return (ret);
 }

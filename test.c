@@ -6,11 +6,12 @@
 int	main(void)
 {
 	int fd = open("test.txt", O_RDONLY);
-	printf("%s-", get_next_line(fd));
-	printf("%s-", get_next_line(fd));
-	printf("%s-", get_next_line(fd));
-	printf("%s-", get_next_line(fd));
-	printf("%s-", get_next_line(fd));
-	printf("%s-", get_next_line(fd));
-	printf("%s-", get_next_line(fd));
+
+	char *res;
+	for(int i = 0; i < 5; i++)
+	{
+		printf(" - %s\n", res = get_next_line(fd));
+		free(res);
+	}
+	close(fd);
 }
