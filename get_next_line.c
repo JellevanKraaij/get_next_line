@@ -6,7 +6,7 @@
 /*   By: jvan-kra <jvan-kra@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/11/01 12:24:47 by jvan-kra          #+#    #+#             */
-/*   Updated: 2021/11/02 16:53:26 by jvan-kra         ###   ########.fr       */
+/*   Updated: 2021/11/02 17:03:05 by jvan-kra         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,22 @@ static void	addleftover(t_gnl *gnl, char **left)
 	ft_memcpy(gnl->buf, *left, gnl->len + 1);
 	free(*left);
 	*left = NULL;
+}
+
+static char	*ft_app(char *dst, const char *src, size_t srclen)
+{
+	size_t	dstlen;
+	char	*ret;
+
+	dstlen = ft_strlen(dst);
+	ret = malloc(srclen + dstlen + 1);
+	if (ret == NULL)
+		return (NULL);
+	ft_memcpy(ret, dst, dstlen);
+	ft_memcpy(ret + dstlen, src, srclen);
+	ret[srclen + dstlen] = '\0';
+	free(dst);
+	return (ret);
 }
 
 char	*get_next_line(int fd)

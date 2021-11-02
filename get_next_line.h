@@ -6,7 +6,7 @@
 /*   By: jvan-kra <jvan-kra@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/10/29 20:59:24 by jvan-kra          #+#    #+#             */
-/*   Updated: 2021/11/02 16:53:26 by jvan-kra         ###   ########.fr       */
+/*   Updated: 2021/11/02 17:03:10 by jvan-kra         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,7 +29,6 @@ typedef struct s_gnl {
 char	*get_next_line(int fd);
 
 void	*ft_memchr(const void *s, int c, size_t n);
-char	*ft_app(char *dst, const char *src, size_t srclen);
 size_t	ft_strlen(const char *s);
 void	*ft_memcpy(void *dst, const void *src, size_t n);
 
