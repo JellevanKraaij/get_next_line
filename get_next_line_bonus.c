@@ -6,23 +6,24 @@
 /*   By: jvan-kra <jvan-kra@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/11/01 12:24:47 by jvan-kra          #+#    #+#             */
-/*   Updated: 2021/11/03 17:05:07 by jvan-kra         ###   ########.fr       */
+/*   Updated: 2021/11/03 20:10:06 by jvan-kra         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "get_next_line_bonus.h"
-# include <stdio.h>
 
-void	*ft_memchr(const void *s, int c, size_t n)
+ssize_t	ft_memchr_idx(const void *s, int c, size_t n)
 {
-	while (n)
+	size_t	i;
+
+	i = 0;
+	while (i < n)
 	{
-		if (*(unsigned char *)s == (unsigned char)c)
-			return ((char *)s);
-		s++;
-		n--;
+		if (((unsigned char *)s)[i] == (unsigned char)c)
+			return (i);
+		i++;
 	}
-	return (NULL);
+	return (-1);
 }
 
 void	*ft_memcpy(void *dst, const void *src, size_t n)
@@ -65,12 +66,10 @@ static char	*ft_app(char *dst, const char *src, size_t srclen)
 	return (ret);
 }
 
-static int	get_next_line2(t_gnl *gnl, char **left, t_list **lst, int fd)
+static int	gnl_fill_buf(t_gnl *gnl, char **left, t_list **lst, int fd)
 {
 	gnl->ret = NULL;
-	// printf("lstptrgnl=%p", *lst);
 	*left = lst_fd_get_data(*lst, fd);
-	// printf("left %p ", *left);
 	if (*left == NULL)
 		gnl->len = read(fd, gnl->buf, BUFFER_SIZE);
 	else
@@ -78,13 +77,12 @@ static int	get_next_line2(t_gnl *gnl, char **left, t_list **lst, int fd)
 		gnl->len = 0;
 		while ((*left)[gnl->len])
 			gnl->len++;
-		ft_memcpy(gnl->buf, *left, gnl->len + 1);
-		// printf(" copied %d chars from leftover ", gnl->len);
+		ft_memcpy(gnl->buf, *left, gnl->len);
 		*left = NULL;
 		if (lst_fd_update_data(lst, fd, *left) < 0)
 			return (-1);
 	}
-	while (gnl->len > 0 && ft_memchr(gnl->buf, '\n', gnl->len) == NULL)
+	while (gnl->len > 0 && ft_memchr_idx(gnl->buf, '\n', gnl->len) < 0)
 	{
 		gnl->ret = ft_app(gnl->ret, gnl->buf, gnl->len);
 		gnl->len = read(fd, gnl->buf, BUFFER_SIZE);
@@ -94,34 +92,29 @@ static int	get_next_line2(t_gnl *gnl, char **left, t_list **lst, int fd)
 
 char	*get_next_line(int fd)
 {
-	static t_list	*lst = NULL;
+	static t_list	*lst;
 	char			*left;
 	t_gnl			gnl;
 
-	setbuf(stdout, NULL);
-	if (get_next_line2(&gnl, &left, &lst, fd) < 0)
-		return (NULL);
-	if (gnl.len < 0)
+	gnl.buf = malloc(BUFFER_SIZE);
+	if (!gnl.buf || gnl_fill_buf(&gnl, &left, &lst, fd) < 0 || gnl.len < 0)
 	{
-		lst_rm_fd(&lst, fd);
 		free(gnl.ret);
+		free(gnl.buf);
 		return (NULL);
 	}
-	if (gnl.len == 0)
+	if (gnl.len != 0)
 	{
-		lst_rm_fd(&lst, fd);
-		return (gnl.ret);
+		gnl.nl = ft_memchr_idx(gnl.buf, '\n', gnl.len);
+		gnl.ret = ft_app(gnl.ret, gnl.buf, gnl.nl + 1);
+		if ((gnl.len - gnl.nl - 1) > 0)
+			left = ft_app(left, gnl.nl + gnl.buf + 1, gnl.len - gnl.nl - 1);
+		if (lst_fd_update_data(&lst, fd, left) < 0)
+		{
+			free(gnl.ret);
+			gnl.ret = NULL;
+		}
 	}
-	gnl.nl = (char *)ft_memchr(gnl.buf, '\n', gnl.len) - gnl.buf;
-	gnl.ret = ft_app(gnl.ret, gnl.buf, gnl.nl + 1);
-	if ((gnl.len - gnl.nl - 1) > 0)
-		left = ft_app(left, gnl.nl + gnl.buf + 1, gnl.len - gnl.nl - 1);
-	// printf("lstptrbef=%p", lst);
-	if (lst_fd_update_data(&lst, fd, left) < 0)
-	{
-		// free(gnl.ret);
-		// gnl.ret = NULL;
-	}
-	// printf("lstptraft=%p", lst);
+	free(gnl.buf);
 	return (gnl.ret);
 }
