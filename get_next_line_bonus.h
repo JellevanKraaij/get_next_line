@@ -6,7 +6,7 @@
 /*   By: jvan-kra <jvan-kra@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/10/29 20:59:24 by jvan-kra          #+#    #+#             */
-/*   Updated: 2021/11/02 21:25:41 by jvan-kra         ###   ########.fr       */
+/*   Updated: 2021/11/03 16:11:36 by jvan-kra         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,8 +40,8 @@ void	*ft_memcpy(void *dst, const void *src, size_t n);
 
 int		lst_add_f(t_list **lst, int fd, char *str);
 void	lst_rm_fd(t_list **lst, int fd);
-int		lst_fd_get_data(const t_list *lst, int fd, char **str);
-void	lst_fd_update_data(t_list *lst, int fd, char *str);
+char	*lst_fd_get_data(const t_list *lst, int fd);
+int		lst_fd_update_data(t_list **lst, int fd, char *str);
 size_t	ft_strlen(const char *s);
 
 #endif

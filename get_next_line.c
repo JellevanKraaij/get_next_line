@@ -6,12 +6,12 @@
 /*   By: jvan-kra <jvan-kra@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/11/01 12:24:47 by jvan-kra          #+#    #+#             */
-/*   Updated: 2021/11/02 17:03:05 by jvan-kra         ###   ########.fr       */
+/*   Updated: 2021/11/03 16:27:55 by jvan-kra         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "get_next_line.h"
-#include <stdio.h>
+# include <stdio.h>
 
 static void	addleftover(t_gnl *gnl, char **left)
 {

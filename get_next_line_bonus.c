@@ -6,12 +6,12 @@
 /*   By: jvan-kra <jvan-kra@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/11/01 12:24:47 by jvan-kra          #+#    #+#             */
-/*   Updated: 2021/11/02 21:42:50 by jvan-kra         ###   ########.fr       */
+/*   Updated: 2021/11/03 17:05:07 by jvan-kra         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "get_next_line_bonus.h"
-#include <stdio.h>
+# include <stdio.h>
 
 void	*ft_memchr(const void *s, int c, size_t n)
 {
@@ -68,11 +68,9 @@ static char	*ft_app(char *dst, const char *src, size_t srclen)
 static int	get_next_line2(t_gnl *gnl, char **left, t_list **lst, int fd)
 {
 	gnl->ret = NULL;
-	if (lst_fd_get_data(*lst, fd, left) < 0)
-	{
-		if (lst_add_f(lst, fd, NULL) < 0)
-			return (-1);
-	}
+	// printf("lstptrgnl=%p", *lst);
+	*left = lst_fd_get_data(*lst, fd);
+	// printf("left %p ", *left);
 	if (*left == NULL)
 		gnl->len = read(fd, gnl->buf, BUFFER_SIZE);
 	else
@@ -81,9 +79,10 @@ static int	get_next_line2(t_gnl *gnl, char **left, t_list **lst, int fd)
 		while ((*left)[gnl->len])
 			gnl->len++;
 		ft_memcpy(gnl->buf, *left, gnl->len + 1);
-		free(*left);
+		// printf(" copied %d chars from leftover ", gnl->len);
 		*left = NULL;
-		lst_fd_update_data(*lst, fd, *left);
+		if (lst_fd_update_data(lst, fd, *left) < 0)
+			return (-1);
 	}
 	while (gnl->len > 0 && ft_memchr(gnl->buf, '\n', gnl->len) == NULL)
 	{
@@ -99,6 +98,7 @@ char	*get_next_line(int fd)
 	char			*left;
 	t_gnl			gnl;
 
+	setbuf(stdout, NULL);
 	if (get_next_line2(&gnl, &left, &lst, fd) < 0)
 		return (NULL);
 	if (gnl.len < 0)
@@ -116,6 +116,12 @@ char	*get_next_line(int fd)
 	gnl.ret = ft_app(gnl.ret, gnl.buf, gnl.nl + 1);
 	if ((gnl.len - gnl.nl - 1) > 0)
 		left = ft_app(left, gnl.nl + gnl.buf + 1, gnl.len - gnl.nl - 1);
-	lst_fd_update_data(lst, fd, left);
+	// printf("lstptrbef=%p", lst);
+	if (lst_fd_update_data(&lst, fd, left) < 0)
+	{
+		// free(gnl.ret);
+		// gnl.ret = NULL;
+	}
+	// printf("lstptraft=%p", lst);
 	return (gnl.ret);
 }
