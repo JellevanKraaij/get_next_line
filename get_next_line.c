@@ -6,12 +6,11 @@
 /*   By: jvan-kra <jvan-kra@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/11/01 12:24:47 by jvan-kra          #+#    #+#             */
-/*   Updated: 2021/11/03 20:02:08 by jvan-kra         ###   ########.fr       */
+/*   Updated: 2021/11/04 13:36:28 by jvan-kra         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "get_next_line.h"
-# include <stdio.h>
 
 static char	*ft_app(char *dst, const char *src, size_t srclen)
 {
