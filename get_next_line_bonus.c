@@ -6,7 +6,7 @@
 /*   By: jvan-kra <jvan-kra@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/11/01 12:24:47 by jvan-kra          #+#    #+#             */
-/*   Updated: 2021/11/03 20:10:06 by jvan-kra         ###   ########.fr       */
+/*   Updated: 2021/11/09 15:52:07 by jvan-kra         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,11 +57,12 @@ static char	*ft_app(char *dst, const char *src, size_t srclen)
 			dstlen++;
 	}
 	ret = malloc(srclen + dstlen + 1);
-	if (ret == NULL)
-		return (NULL);
-	ft_memcpy(ret, dst, dstlen);
-	ft_memcpy(ret + dstlen, src, srclen);
-	ret[srclen + dstlen] = '\0';
+	if (ret != NULL)
+	{
+		ft_memcpy(ret, dst, dstlen);
+		ft_memcpy(ret + dstlen, src, srclen);
+		ret[srclen + dstlen] = '\0';
+	}
 	free(dst);
 	return (ret);
 }
