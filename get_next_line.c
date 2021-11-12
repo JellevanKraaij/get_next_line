@@ -6,7 +6,7 @@
 /*   By: jvan-kra <jvan-kra@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/11/01 12:24:47 by jvan-kra          #+#    #+#             */
-/*   Updated: 2021/11/09 15:52:23 by jvan-kra         ###   ########.fr       */
+/*   Updated: 2021/11/10 15:51:18 by jvan-kra         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,8 +29,10 @@ static char	*ft_app(char *dst, const char *src, size_t srclen)
 	return (ret);
 }
 
-static void	*free_mem(char *buf, char *ret)
+static void	*free_mem(char *buf, char *ret, char **left)
 {
+	free(*left);
+	*left = NULL;
 	free(buf);
 	free(ret);
 	return (NULL);
@@ -57,7 +59,7 @@ char	*get_next_line(int fd)
 	gnl.ret = NULL;
 	gnl.buf = malloc(BUFFER_SIZE);
 	if (gnl.buf == NULL)
-		return (free_mem(gnl.buf, gnl.ret));
+		return (free_mem(gnl.buf, gnl.ret, &left));
 	gnl_fill_buf(&gnl, &left, fd);
 	while (gnl.len > 0 && ft_memchr_idx(gnl.buf, '\n', gnl.len) < 0)
 	{
@@ -65,7 +67,7 @@ char	*get_next_line(int fd)
 		gnl.len = read(fd, gnl.buf, BUFFER_SIZE);
 	}
 	if (gnl.len < 0)
-		return (free_mem(gnl.buf, gnl.ret));
+		return (free_mem(gnl.buf, gnl.ret, &left));
 	if (gnl.len != 0)
 	{
 		gnl.nl = ft_memchr_idx(gnl.buf, '\n', gnl.len);
