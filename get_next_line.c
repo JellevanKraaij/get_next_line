@@ -6,7 +6,7 @@
 /*   By: jvan-kra <jvan-kra@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/11/01 12:24:47 by jvan-kra          #+#    #+#             */
-/*   Updated: 2021/11/10 15:51:18 by jvan-kra         ###   ########.fr       */
+/*   Updated: 2021/11/12 22:32:35 by jvan-kra         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,6 +64,8 @@ char	*get_next_line(int fd)
 	while (gnl.len > 0 && ft_memchr_idx(gnl.buf, '\n', gnl.len) < 0)
 	{
 		gnl.ret = ft_app(gnl.ret, gnl.buf, gnl.len);
+		if (gnl.ret == NULL)
+			return (free_mem(gnl.buf, gnl.ret, &left));
 		gnl.len = read(fd, gnl.buf, BUFFER_SIZE);
 	}
 	if (gnl.len < 0)
@@ -72,8 +74,14 @@ char	*get_next_line(int fd)
 	{
 		gnl.nl = ft_memchr_idx(gnl.buf, '\n', gnl.len);
 		gnl.ret = ft_app(gnl.ret, gnl.buf, gnl.nl + 1);
+		if (gnl.ret == NULL)
+			return (free_mem(gnl.buf, gnl.ret, &left));
 		if ((gnl.len - gnl.nl - 1) > 0)
+		{
 			left = ft_app(left, gnl.nl + gnl.buf + 1, gnl.len - gnl.nl - 1);
+			if (left == NULL)
+				return (free_mem(gnl.buf, gnl.ret, &left));
+		}
 	}
 	free(gnl.buf);
 	return (gnl.ret);
