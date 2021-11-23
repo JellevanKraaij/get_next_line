@@ -6,7 +6,7 @@
 /*   By: jvan-kra <jvan-kra@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/11/01 12:24:47 by jvan-kra          #+#    #+#             */
-/*   Updated: 2021/11/24 00:26:53 by jvan-kra         ###   ########.fr       */
+/*   Updated: 2021/11/24 00:48:17 by jvan-kra         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,6 +50,10 @@ static void	*free_mem(char *buf, char *ret, char **left)
 
 static ssize_t	gnl_fill_buf(t_gnl *gnl, char **left, int fd)
 {
+	if (gnl->buf == NULL)
+		gnl->buf = malloc(BUFFER_SIZE);
+	if (gnl->buf == NULL)
+		return (-1);
 	if (*left != NULL)
 	{
 		gnl->len = ft_strlen(*left);
@@ -68,14 +72,14 @@ char	*get_next_line(int fd)
 	t_gnl		gnl;
 
 	gnl.ret = NULL;
-	gnl.buf = malloc(BUFFER_SIZE);
+	gnl.buf = NULL;
 	while (1)
 	{
 		if (gnl_fill_buf(&gnl, &left, fd) < 0)
 			return (free_mem(gnl.buf, gnl.ret, &left));
 		if (gnl.len == 0)
 			break ;
-		if (ft_memchr_idx(gnl.buf, '\n', gnl.len, &gnl.nl))
+		if (ft_memchr_idx(gnl.buf, '\n', gnl.len, &gnl.nl) || gnl.len == 0)
 		{
 			if (ft_app(&gnl.ret, gnl.buf, gnl.nl + 1) < 0)
 				return (free_mem(gnl.buf, gnl.ret, &left));
