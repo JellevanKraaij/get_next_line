@@ -6,82 +6,103 @@
 /*   By: jvan-kra <jvan-kra@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/11/01 12:24:47 by jvan-kra          #+#    #+#             */
-/*   Updated: 2021/11/12 22:32:35 by jvan-kra         ###   ########.fr       */
+/*   Updated: 2021/11/24 15:21:47 by jvan-kra         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "get_next_line.h"
 
-static char	*ft_app(char *dst, const char *src, size_t srclen)
+static int	ft_app(char **dst, const char *src, size_t srclen)
 {
 	size_t	dstlen;
-	char	*ret;
+	char	*tmp;
 
-	dstlen = ft_strlen(dst);
-	ret = malloc(srclen + dstlen + 1);
-	if (ret != NULL)
+	dstlen = ft_strlen(*dst);
+	if (dstlen + srclen == 0)
 	{
-		ft_memcpy(ret, dst, dstlen);
-		ft_memcpy(ret + dstlen, src, srclen);
-		ret[srclen + dstlen] = '\0';
+		free(*dst);
+		*dst = NULL;
+		return (0);
 	}
-	free(dst);
-	return (ret);
+	tmp = malloc(srclen + dstlen + 1);
+	if (tmp == NULL)
+	{
+		free(*dst);
+		*dst = NULL;
+		return (-1);
+	}
+	ft_memcpy(tmp, *dst, dstlen);
+	ft_memcpy(tmp + dstlen, src, srclen);
+	tmp[srclen + dstlen] = '\0';
+	free(*dst);
+	*dst = tmp;
+	return (1);
 }
 
-static void	*free_mem(char *buf, char *ret, char **left)
+static void	*free_mem(t_gnl gnl, t_list **lst, int fd)
 {
-	free(*left);
-	*left = NULL;
-	free(buf);
-	free(ret);
+	lst_rm_fd(lst, fd);
+	free(gnl.buf);
+	free(gnl.ret);
 	return (NULL);
 }
 
-static void	gnl_fill_buf(t_gnl *gnl, char **left, int fd)
+static ssize_t	gnl_fill_buf(t_gnl *gnl, t_list **lst, int fd)
 {
-	if (*left == NULL)
-		gnl->len = read(fd, gnl->buf, BUFFER_SIZE);
-	else
+	char	*left;	
+
+	if (gnl->buf == NULL)
+		gnl->buf = malloc(BUFFER_SIZE);
+	if (gnl->buf == NULL)
+		return (-1);
+	left = lst_fd_get_data(*lst, fd);
+	if (left != NULL)
 	{
-		gnl->len = ft_strlen(*left);
-		ft_memcpy(gnl->buf, *left, gnl->len);
-		free(*left);
-		*left = NULL;
+		gnl->len = ft_strlen(left);
+		ft_memcpy(gnl->buf, left, gnl->len);
+		lst_rm_fd(lst, fd);
 	}
+	else
+		gnl->len = read(fd, gnl->buf, BUFFER_SIZE);
+	return (gnl->len);
+}
+
+static ssize_t	ft_memchr_idx(const void *s, int c, size_t n, size_t *res)
+{
+	*res = 0;
+	while (*res < n)
+	{
+		if (((unsigned char *)s)[*res] == (unsigned char)c)
+			return (*res);
+		(*res)++;
+	}
+	return (-1);
 }
 
 char	*get_next_line(int fd)
 {
-	static char	*left;
-	t_gnl		gnl;
+	static t_list	*lst;
+	t_gnl			gnl;
+	char			*left;
 
 	gnl.ret = NULL;
-	gnl.buf = malloc(BUFFER_SIZE);
-	if (gnl.buf == NULL)
-		return (free_mem(gnl.buf, gnl.ret, &left));
-	gnl_fill_buf(&gnl, &left, fd);
-	while (gnl.len > 0 && ft_memchr_idx(gnl.buf, '\n', gnl.len) < 0)
+	gnl.buf = NULL;
+	while (1)
 	{
-		gnl.ret = ft_app(gnl.ret, gnl.buf, gnl.len);
-		if (gnl.ret == NULL)
-			return (free_mem(gnl.buf, gnl.ret, &left));
-		gnl.len = read(fd, gnl.buf, BUFFER_SIZE);
+		if (gnl_fill_buf(&gnl, &lst, fd) < 0)
+			return (free_mem(gnl, &lst, fd));
+		if (gnl.len == 0 || ft_memchr_idx(gnl.buf, '\n', gnl.len, &gnl.nl) >= 0)
+			break ;
+		if (ft_app(&gnl.ret, gnl.buf, gnl.len) < 0)
+			return (free_mem(gnl, &lst, fd));
 	}
-	if (gnl.len < 0)
-		return (free_mem(gnl.buf, gnl.ret, &left));
-	if (gnl.len != 0)
+	if (gnl.len > 0)
 	{
-		gnl.nl = ft_memchr_idx(gnl.buf, '\n', gnl.len);
-		gnl.ret = ft_app(gnl.ret, gnl.buf, gnl.nl + 1);
-		if (gnl.ret == NULL)
-			return (free_mem(gnl.buf, gnl.ret, &left));
-		if ((gnl.len - gnl.nl - 1) > 0)
-		{
-			left = ft_app(left, gnl.nl + gnl.buf + 1, gnl.len - gnl.nl - 1);
-			if (left == NULL)
-				return (free_mem(gnl.buf, gnl.ret, &left));
-		}
+		left = NULL;
+		if (ft_app(&gnl.ret, gnl.buf, gnl.nl + 1) < 0 || \
+			ft_app(&left, gnl.buf + gnl.nl + 1, gnl.len - gnl.nl - 1) < 0 || \
+			lst_fd_update_data(&lst, fd, &left) < 0)
+			return (free_mem(gnl, &lst, fd));
 	}
 	free(gnl.buf);
 	return (gnl.ret);

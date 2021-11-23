@@ -6,25 +6,11 @@
 /*   By: jvan-kra <jvan-kra@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/11/01 15:57:31 by jvan-kra          #+#    #+#             */
-/*   Updated: 2021/11/03 19:47:33 by jvan-kra         ###   ########.fr       */
+/*   Updated: 2021/11/24 15:21:44 by jvan-kra         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "get_next_line.h"
-
-ssize_t	ft_memchr_idx(const void *s, int c, size_t n)
-{
-	size_t	i;
-
-	i = 0;
-	while (i < n)
-	{
-		if (((unsigned char *)s)[i] == (unsigned char)c)
-			return (i);
-		i++;
-	}
-	return (-1);
-}
 
 size_t	ft_strlen(const char *s)
 {
@@ -53,4 +39,64 @@ void	*ft_memcpy(void *dst, const void *src, size_t n)
 		n--;
 	}
 	return (_dst);
+}
+
+char	*lst_fd_get_data(const t_list *lst, int fd)
+{
+	while (lst != NULL)
+	{
+		if (lst->fd == fd)
+			return (lst->str);
+		lst = lst->next;
+	}
+	return (NULL);
+}
+
+void	lst_rm_fd(t_list **lst, int fd)
+{
+	t_list	*tmp;
+	t_list	*to_it;
+
+	while (*lst != NULL && (*lst)->fd == fd)
+	{
+		tmp = (*lst)->next;
+		free((*lst)->str);
+		free(*lst);
+		*lst = tmp;
+	}
+	to_it = *lst;
+	while (to_it != NULL && to_it->next != NULL)
+	{
+		if (to_it->next->fd == fd)
+		{
+			tmp = to_it->next->next;
+			free(to_it->next->str);
+			free(to_it->next);
+			to_it->next = tmp;
+		}
+		to_it = to_it->next;
+	}
+}
+
+int	lst_fd_update_data(t_list **lst, int fd, char **str)
+{
+	t_list	*new;
+
+	if (*str == NULL)
+		lst_rm_fd(lst, fd);
+	else
+	{
+		new = malloc(sizeof(t_list));
+		if (new == NULL)
+		{
+			free(*str);
+			*str = NULL;
+			return (-1);
+		}
+		new->fd = fd;
+		new->str = *str;
+		new->next = *lst;
+		*lst = new;
+	}
+	return (0);
 }
