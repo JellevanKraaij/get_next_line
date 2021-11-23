@@ -6,30 +6,37 @@
 /*   By: jvan-kra <jvan-kra@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/11/01 12:24:47 by jvan-kra          #+#    #+#             */
-/*   Updated: 2021/11/23 20:49:21 by jvan-kra         ###   ########.fr       */
+/*   Updated: 2021/11/24 00:26:53 by jvan-kra         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "get_next_line.h"
 
-static char	*ft_app(char *dst, const char *src, size_t srclen, size_t minsize)
+static int	ft_app(char **dst, const char *src, size_t srclen)
 {
 	size_t	dstlen;
-	char	*ret;
+	char	*tmp;
 
-	dstlen = ft_strlen(dst);
-	if (srclen + dstlen + 1 <= minsize)
-		ret = malloc(minsize);
-	else
-		ret = malloc(srclen + dstlen + 1);
-	if (ret != NULL)
+	dstlen = ft_strlen(*dst);
+	if (dstlen + srclen == 0)
 	{
-		ft_memcpy(ret, dst, dstlen);
-		ft_memcpy(ret + dstlen, src, srclen);
-		ret[srclen + dstlen] = '\0';
+		free(*dst);
+		*dst = NULL;
+		return (0);
 	}
-	free(dst);
-	return (ret);
+	tmp = malloc(srclen + dstlen + 1);
+	if (tmp == NULL)
+	{
+		free(*dst);
+		*dst = NULL;
+		return (-1);
+	}
+	ft_memcpy(tmp, *dst, dstlen);
+	ft_memcpy(tmp + dstlen, src, srclen);
+	tmp[srclen + dstlen] = '\0';
+	free(*dst);
+	*dst = tmp;
+	return (1);
 }
 
 static void	*free_mem(char *buf, char *ret, char **left)
@@ -50,7 +57,8 @@ static ssize_t	gnl_fill_buf(t_gnl *gnl, char **left, int fd)
 		free(*left);
 		*left = NULL;
 	}
-	gnl->len = read(fd, gnl->buf, BUFFER_SIZE);
+	else
+		gnl->len = read(fd, gnl->buf, BUFFER_SIZE);
 	return (gnl->len);
 }
 
@@ -65,17 +73,19 @@ char	*get_next_line(int fd)
 	{
 		if (gnl_fill_buf(&gnl, &left, fd) < 0)
 			return (free_mem(gnl.buf, gnl.ret, &left));
-		if (ft_memchr_idx(gnl.buf, '\n', gnl.len, &gnl.nl) || gnl.len == 0)
+		if (gnl.len == 0)
+			break ;
+		if (ft_memchr_idx(gnl.buf, '\n', gnl.len, &gnl.nl))
 		{
-			printf("len = %d, nl = %d\n", gnl.len, gnl.nl);
-			gnl.ret = ft_app(gnl.ret, gnl.buf, gnl.nl, 0);
-			if (gnl.ret != NULL && gnl.nl < gnl.len)
-				left = ft_app(NULL, gnl.buf + gnl.nl + 1, gnl.len - gnl.nl - 1, 0);
-			free(gnl.buf);
-			return (gnl.ret);
+			if (ft_app(&gnl.ret, gnl.buf, gnl.nl + 1) < 0)
+				return (free_mem(gnl.buf, gnl.ret, &left));
+			if (ft_app(&left, gnl.buf + gnl.nl + 1, gnl.len - gnl.nl - 1) < 0)
+				return (free_mem(gnl.buf, gnl.ret, &left));
+			break ;
 		}
-		gnl.ret = ft_app(gnl.ret, gnl.buf, gnl.len, 0);
-		if (gnl.ret == NULL)
+		if (ft_app(&gnl.ret, gnl.buf, gnl.len) < 0)
 			return (free_mem(gnl.buf, gnl.ret, &left));
 	}
+	free(gnl.buf);
+	return (gnl.ret);
 }
