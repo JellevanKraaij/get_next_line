@@ -6,24 +6,22 @@
 /*   By: jvan-kra <jvan-kra@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/11/01 15:57:31 by jvan-kra          #+#    #+#             */
-/*   Updated: 2021/11/03 19:47:33 by jvan-kra         ###   ########.fr       */
+/*   Updated: 2021/11/23 20:33:12 by jvan-kra         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "get_next_line.h"
 
-ssize_t	ft_memchr_idx(const void *s, int c, size_t n)
+int	ft_memchr_idx(const void *s, int c, size_t n, size_t *res)
 {
-	size_t	i;
-
-	i = 0;
-	while (i < n)
+	*res = 0;
+	while (*res < n)
 	{
-		if (((unsigned char *)s)[i] == (unsigned char)c)
-			return (i);
-		i++;
+		if (((unsigned char *)s)[*res] == (unsigned char)c)
+			return (1);
+		(*res)++;
 	}
-	return (-1);
+	return (0);
 }
 
 size_t	ft_strlen(const char *s)
