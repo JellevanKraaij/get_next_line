@@ -6,7 +6,7 @@
 /*   By: jvan-kra <jvan-kra@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/10/29 20:59:24 by jvan-kra          #+#    #+#             */
-/*   Updated: 2021/11/24 15:01:15 by jvan-kra         ###   ########.fr       */
+/*   Updated: 2021/12/14 17:32:03 by jvan-kra         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,8 +22,9 @@
 typedef struct s_gnl {
 	char	*buf;
 	char	*ret;
-	size_t	len;
+	ssize_t	len;
 	size_t	nl;
+	size_t	retlen;
 }	t_gnl;
 
 typedef struct s_list
